@@ -376,7 +376,7 @@ Resources:
                       "VPCStack": "${VPCStack}"
                   }
               RunOrder: 1
-        - Name: Goldfish
+        - Name: Apps
           Actions:
             - Name: GoldfishInfrastructure
               InputArtifacts:
@@ -402,8 +402,6 @@ Resources:
                       "SharedStack":"video-shared-prod"
                   }
               RunOrder: 1
-        - Name: VideoApi
-          Actions:
             - Name: VideoApiInfrastructure
               InputArtifacts:
                 - Name: GroupSource
@@ -428,8 +426,6 @@ Resources:
                       "SharedStack":"video-shared-prod"
                   }
               RunOrder: 1
-        - Name: TranscoderService
-          Actions:
             - Name: TranscoderServiceInfrastructure
               InputArtifacts:
                 - Name: GroupSource
@@ -527,7 +523,7 @@ Resources:
                       "Environment": "sandbox"
                   }
               RunOrder: 1
-        - Name: Goldfish
+        - Name: Apps
           Actions:
             - Name: GoldfishInfrastructure
               InputArtifacts:
@@ -553,8 +549,6 @@ Resources:
                       "SharedStack":"video-shared-sandbox"
                   }
               RunOrder: 1
-        - Name: VideoApi
-          Actions:
             - Name: VideoApiInfrastructure
               InputArtifacts:
                 - Name: GroupSource
@@ -579,8 +573,6 @@ Resources:
                       "SharedStack":"video-shared-sandbox"
                   }
               RunOrder: 1
-        - Name: TranscoderService
-          Actions:
             - Name: TranscoderServiceInfrastructure
               InputArtifacts:
                 - Name: GroupSource

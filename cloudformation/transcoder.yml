@@ -27,7 +27,7 @@ Resources:
       RepositoryName:
         Fn::Join:
           - ''
-          - - 'Transcoder-'
+          - - 'video/transcoder/'
             - Ref: Environment
 
 Outputs:

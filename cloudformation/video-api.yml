@@ -27,7 +27,7 @@ Resources:
       RepositoryName:
         Fn::Join:
           - ''
-          - - 'VideoAPI-'
+          - - 'video/api/'
             - Ref: Environment
 
 Outputs:
