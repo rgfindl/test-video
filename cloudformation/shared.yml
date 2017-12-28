@@ -6,6 +6,10 @@ Parameters:
     Type: String
     Description: Lambda that handle's Custom CloudFormation Resources
 
+  VPCStack:
+    Type: String
+    Description: VPC Stack Name
+
   DesiredCapacity:
     Type: Number
     Default: '2'

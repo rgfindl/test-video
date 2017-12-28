@@ -6,15 +6,24 @@ Parameters:
     Description: The name of the GitHub repository owner
     Type: String
     Default: WPMedia
+# TODO
+#  GitHubToken:
+#    Description: OAuth token for repository access (https://github.com/settings/tokens)
+#    Type: "AWS::SSM::Parameter::Value<String>"
+#    Default: "/bootstrap/secrets/github-token"
+#    NoEcho: True
   GitHubToken:
-    Description: OAuth token for repository access (https://github.com/settings/tokens)
-    Type: "AWS::SSM::Parameter::Value<String>"
-    Default: "/bootstrap/secrets/github-token"
-    NoEcho: True
-  ApplicationGroup:
-    Description: This application group
-    Type: "AWS::SSM::Parameter::Value<String>"
-    Default: "/application-group/name"
+    Type: String
+    Description: GitHub repository OAuth token
+    Default: ''
+  GitHubRepo:
+    Type: String
+    Description: GitHub repository name
+    Default: 'aws-group-video'
+  VPCStack:
+    Type: String
+    Description: The VPC Stack name.  Used to get output variables.
+    Default: 'services-stack-vpc'
 
 Resources:
 
@@ -325,7 +334,7 @@ Resources:
               Configuration:
                 Owner: !Ref GitHubOwner
                 Branch: 'master'
-                Repo: !Sub aws-group-${ApplicationGroup} # This repo
+                Repo: !Ref GitHubRepo
                 OAuthToken: !Ref GitHubToken
               RunOrder: 1
         - Name: Build
@@ -364,7 +373,8 @@ Resources:
                 ParameterOverrides: !Sub |
                   {
                       "CloudFormationLambdaArn" : "${CloudFormationLambdaProd.Arn}",
-                      "Environment": "prod"
+                      "Environment": "prod",
+                      "VPCStack": "${VPCStack}"
                   }
               RunOrder: 1
         - Name: Goldfish
@@ -389,6 +399,7 @@ Resources:
                   {
                       "CloudFormationLambdaArn" : "${CloudFormationLambdaProd.Arn}",
                       "Environment":"prod",
+                      "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-prod"
                   }
               RunOrder: 1
@@ -414,6 +425,7 @@ Resources:
                   {
                       "CloudFormationLambdaArn" : "${CloudFormationLambdaProd.Arn}",
                       "Environment": "prod",
+                      "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-prod"
                   }
               RunOrder: 1
@@ -439,6 +451,7 @@ Resources:
                   {
                       "CloudFormationLambdaArn" : "${CloudFormationLambdaProd.Arn}",
                       "Environment": "prod",
+                      "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-prod"
                   }
               RunOrder: 1
@@ -473,7 +486,7 @@ Resources:
               Configuration:
                 Owner: !Ref GitHubOwner
                 Branch: 'develop'
-                Repo: !Sub aws-group-${ApplicationGroup} # This repo
+                Repo: !Ref GitHubRepo
                 OAuthToken: !Ref GitHubToken
               RunOrder: 1
         - Name: Build
@@ -512,6 +525,7 @@ Resources:
                 ParameterOverrides: !Sub |
                   {
                       "CloudFormationLambdaArn" : "${CloudFormationLambdaSandbox.Arn}",
+                      "VPCStack": "${VPCStack}",
                       "Environment": "sandbox"
                   }
               RunOrder: 1
@@ -537,6 +551,7 @@ Resources:
                   {
                       "CloudFormationLambdaArn" : "${CloudFormationLambdaSandbox.Arn}",
                       "Environment":"sandbox",
+                      "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-sandbox"
                   }
               RunOrder: 1
@@ -562,6 +577,7 @@ Resources:
                   {
                       "CloudFormationLambdaArn" : "${CloudFormationLambdaSandbox.Arn}",
                       "Environment": "sandbox",
+                      "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-sandbox"
                   }
               RunOrder: 1
@@ -587,6 +603,7 @@ Resources:
                   {
                       "CloudFormationLambdaArn" : "${CloudFormationLambdaSandbox.Arn}",
                       "Environment": "sandbox",
+                      "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-sandbox"
                   }
               RunOrder: 1
