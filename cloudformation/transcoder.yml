@@ -228,7 +228,7 @@ Resources:
             Effect: 'Allow'
             Resource: !GetAtt TranscoderSQS.Arn
             Principal:
-              AWS: !Ref TaskRole
+              AWS: !GetAtt TaskRole.Arn
 
   #
   # Subscribe our new SQS to the SNS topic.
