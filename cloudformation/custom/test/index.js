@@ -157,7 +157,7 @@ describe('index', function() {
             createPresets: function(params, done) {
                 winston.info('elastictranscoder.createPresets');
                 //winston.info(JSON.stringify(params, null, 3));
-                assert.equal(params.presets[0].Name, 'WP : Generic 720p-16:9 mp4-Fit *');
+                assert.equal(params.presets[0].Name, 'WP:Generic 720p-16:9 mp4-Fit');
                 done(null, {
                     "Id1": "1"
                 });

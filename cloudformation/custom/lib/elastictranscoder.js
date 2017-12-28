@@ -33,7 +33,7 @@ functions.createPresets = function(input, done) {
         if (_.isNil(params.Description)) {
             params.Description = '';
         }
-        params.Name = input.environment + ' - ' + params.Name;
+        params.Name = input.environment.charAt(0) + ' ' + params.Name;
         console.log(JSON.stringify(params, null, 3));
         elastictranscoder.createPreset(params, function(err, data) {
             if (err) return next(err);
