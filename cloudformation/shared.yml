@@ -263,7 +263,7 @@ Resources:
       TopicName:
         Fn::Join:
           - ''
-            - 'goldfish-transcoder-job-status-'
+          - - 'goldfish-transcoder-job-status-'
             - Ref: Environment
 
   TranscoderSNSPolicy:
