@@ -1,0 +1,21 @@
+{
+  "name": "aws-group-video.custom-cloudformation-resources",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "aws-sdk": "^2.175.0",
+    "mocha": "^4.0.1"
+  },
+  "dependencies": {
+    "async": "^2.6.0",
+    "cfn-response": "^1.0.1",
+    "lodash": "^4.17.4",
+    "winston": "^2.4.0"
+  }
+}

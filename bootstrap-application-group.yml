@@ -1,0 +1,609 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: The Video application - boostrap template.
+
+Parameters:
+  GitHubOwner:
+    Description: The name of the GitHub repository owner
+    Type: String
+    Default: WPMedia
+  GitHubToken:
+    Description: OAuth token for repository access (https://github.com/settings/tokens)
+    Type: "AWS::SSM::Parameter::Value<String>"
+    Default: "/bootstrap/secrets/github-token"
+    NoEcho: True
+  ApplicationGroup:
+    Description: This application group
+    Type: "AWS::SSM::Parameter::Value<String>"
+    Default: "/application-group/name"
+
+Resources:
+
+  #
+  # Bucket used by the pipelines to store artifacts.
+  #
+  PipelinesBucket:
+    Description: The artifact bucket required for inter-stage data exchange
+    Type: AWS::S3::Bucket
+
+  #
+  # IAM Role needed by the pipelines
+  #
+  CodePipelineRole:
+    Description: The role CodePipeline will assume during pipeline execution
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+            Effect: Allow
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+            Action: sts:AssumeRole
+
+  CodePipelinePolicy:
+    Description: Policy for the CodePipeline Role
+    DependsOn: CodePipelineRole
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName:
+        Fn::Join:
+          - ''
+          - - Ref: AWS::StackName
+            - '-pipeline-policy'
+      Roles:
+        - !Ref CodePipelineRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - s3:*
+            Effect: Allow
+            Resource:
+              - !GetAtt PipelinesBucket.Arn
+              - !Join ["", [!GetAtt PipelinesBucket.Arn, "*"]]
+          - Action:
+              - cloudformation:*
+            Effect: Allow
+            Resource:
+              - !Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/video-*
+          - Action:
+              - codepipeline:*
+            Effect: Allow
+            Resource:
+              - !Sub arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:video-*
+          - Action:
+              - codebuild:StartBuild
+              - codebuild:BatchGetBuilds
+              - codebuild:StopBuild
+            Effect: Allow
+            Resource:
+              - '*'
+          - Action:
+              - iam:PassRole
+            Effect: Allow
+            Resource:
+              - !GetAtt CloudFormationRole.Arn
+
+  #
+  # IAM Role needed by cloudformation
+  #
+  CloudFormationRole:
+    Description: The role cloudformation will assume during pipeline execution
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+            Effect: Allow
+            Principal:
+              Service:
+                - cloudformation.amazonaws.com
+            Action: sts:AssumeRole
+  CloudFormationPolicy:
+    Description: Policy for the cloudformation execution Role
+    DependsOn: CloudFormationRole
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName:
+        Fn::Join:
+          - ''
+          - - Ref: AWS::StackName
+            - '-cloudformation-policy'
+      Roles:
+        - !Ref CloudFormationRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - '*'
+            Resource:
+              - '*'
+
+  #
+  # IAM role needed by our CloudFormation Custom Resource's Lambda
+  #
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: '/'
+  LambdaExecutionPolicy:
+    Type: AWS::IAM::Policy
+    Description: Policy for the lambda custom cloudformation resources execution
+    DependsOn: LambdaExecutionRole
+    Properties:
+      PolicyName:
+        Fn::Join:
+          - ''
+          - - Ref: AWS::StackName
+            - '-lambda-policy'
+      Roles:
+        - !Ref LambdaExecutionRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - '*'
+            Resource:
+              - '*'
+
+  #
+  # Custom CloudFormation Resources Lambda function.
+  #
+  CloudFormationLambdaProd:
+    Type: AWS::Lambda::Function
+    Description: Custom CloudFormation Resources Lambda function.
+    Properties:
+      Handler: index.handler
+      Timeout: 5
+      Role:
+        Fn::GetAtt:
+          - LambdaExecutionRole
+          - Arn
+      Code:
+        ZipFile: !Sub |
+          'use strict';
+
+          exports.handler = function(event, context) {
+              console.log(JSON.stringify(event));
+              context.succeed('To be replaced by CodeBuild pipeline phase.');
+          };
+      Runtime: nodejs6.10
+      Environment:
+        Variables:
+          PipelinesBucket: !Ref PipelinesBucket
+  CloudFormationLambdaSandbox:
+    Type: AWS::Lambda::Function
+    Description: Custom CloudFormation Resources Lambda function.
+    Properties:
+      Handler: index.handler
+      Timeout: 5
+      Role:
+        Fn::GetAtt:
+          - LambdaExecutionRole
+          - Arn
+      Code:
+        ZipFile: !Sub |
+          'use strict';
+
+          exports.handler = function(event, context) {
+              console.log(JSON.stringify(event));
+              context.succeed('To be replaced by CodeBuild pipeline phase.');
+          };
+      Runtime: nodejs6.10
+      Environment:
+        Variables:
+          PipelinesBucket: !Ref PipelinesBucket
+
+  #
+  # IAM role needed by our CodeBuild
+  #
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+  CodeBuildPolicy:
+    Type: AWS::IAM::Policy
+    Description: Policy for the codebuild execution
+    DependsOn: CodeBuildRole
+    Properties:
+      PolicyName:
+        Fn::Join:
+          - ''
+          - - Ref: AWS::StackName
+            - '-codebuild-policy'
+      Roles:
+        - !Ref CodeBuildRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - '*'
+            Resource:
+              - '*'
+
+  #
+  # Code Build project.
+  # This builds, packages, and deploys our Lambda.
+  # The Lambda is used by CloudFormation to handle our Custom Resources.  Stuff CloudFormation doesn't natively support.
+  #
+  CodeBuildProd:
+    Type: AWS::CodeBuild::Project
+    DependsOn: CloudFormationLambdaProd
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/eb-nodejs-6.10.0-amazonlinux-64:4.0.0
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: CloudFormationLambda
+            Value: !Ref CloudFormationLambdaProd
+      Name:
+        Fn::Join:
+          - ''
+          - - Ref: AWS::StackName
+            - '-code-build-prod'
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: cloudformation/custom/buildspec.yml
+      TimeoutInMinutes: 5 # must be between 5 minutes and 8 hours
+  CodeBuildSandbox:
+    Type: AWS::CodeBuild::Project
+    DependsOn: CloudFormationLambdaSandbox
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/eb-nodejs-6.10.0-amazonlinux-64:4.0.0
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: CloudFormationLambda
+            Value: !Ref CloudFormationLambdaSandbox
+      Name:
+        Fn::Join:
+          - ''
+          - - Ref: AWS::StackName
+            - '-code-build-sandbox'
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: cloudformation/custom/buildspec.yml
+      TimeoutInMinutes: 5 # must be between 5 minutes and 8 hours
+
+  #
+  # Pipelines that create/update the cloudformation stacks within the project
+  # Prod environment.
+  #
+  VideoPipelinesProd:
+    Description: The pipeline that will generate other pipelines
+    Type: AWS::CodePipeline::Pipeline
+    DependsOn:
+      - CloudFormationLambdaProd
+      - CodeBuildProd
+    Properties:
+      Name: video-pipelines
+      RestartExecutionOnUpdate: True
+      RoleArn: !GetAtt CodePipelineRole.Arn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref PipelinesBucket
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: CloneRepository
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Version: 1
+                Provider: GitHub
+              OutputArtifacts:
+                - Name: GroupSource
+              Configuration:
+                Owner: !Ref GitHubOwner
+                Branch: 'master'
+                Repo: !Sub aws-group-${ApplicationGroup} # This repo
+                OAuthToken: !Ref GitHubToken
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: BuildCustomResources
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              Configuration:
+                ProjectName: !Ref CodeBuildProd
+              InputArtifacts:
+                - Name: GroupSource
+              OutputArtifacts:
+                - Name: BuildOutput
+        - Name: Shared
+          Actions:
+            - Name: SharedInfrastructure
+              InputArtifacts:
+                - Name: GroupSource
+                - Name: BuildOutput
+              OutputArtifacts:
+                - Name: SharedOutput
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration:
+                TemplatePath: !Sub "GroupSource::cloudformation/shared.yml"
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_NAMED_IAM
+                RoleArn: !GetAtt CloudFormationRole.Arn
+                StackName: video-shared-prod
+                ParameterOverrides: !Sub |
+                  {
+                      "CloudFormationLambdaArn" : "${CloudFormationLambdaProd.Arn}",
+                      "Environment": "prod"
+                  }
+              RunOrder: 1
+        - Name: Goldfish
+          Actions:
+            - Name: GoldfishInfrastructure
+              InputArtifacts:
+                - Name: GroupSource
+                - Name: BuildOutput
+                - Name: SharedOutput
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration:
+                TemplatePath: !Sub "GroupSource::cloudformation/goldfish.yml"
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_NAMED_IAM
+                RoleArn: !GetAtt CloudFormationRole.Arn
+                StackName: video-goldfish-prod
+                ParameterOverrides: !Sub |
+                  {
+                      "CloudFormationLambdaArn" : "${CloudFormationLambdaProd.Arn}",
+                      "Environment":"prod",
+                      "SharedStack":"video-shared-prod"
+                  }
+              RunOrder: 1
+        - Name: VideoApi
+          Actions:
+            - Name: VideoApiInfrastructure
+              InputArtifacts:
+                - Name: GroupSource
+                - Name: BuildOutput
+                - Name: SharedOutput
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration:
+                TemplatePath: !Sub "GroupSource::cloudformation/video-api.yml"
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_NAMED_IAM
+                RoleArn: !GetAtt CloudFormationRole.Arn
+                StackName: video-video-api-prod
+                ParameterOverrides: !Sub |
+                  {
+                      "CloudFormationLambdaArn" : "${CloudFormationLambdaProd.Arn}",
+                      "Environment": "prod",
+                      "SharedStack":"video-shared-prod"
+                  }
+              RunOrder: 1
+        - Name: TranscoderService
+          Actions:
+            - Name: TranscoderServiceInfrastructure
+              InputArtifacts:
+                - Name: GroupSource
+                - Name: BuildOutput
+                - Name: SharedOutput
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration:
+                TemplatePath: !Sub "GroupSource::cloudformation/transcoder.yml"
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_NAMED_IAM
+                RoleArn: !GetAtt CloudFormationRole.Arn
+                StackName: video-transcoder-prod
+                ParameterOverrides: !Sub |
+                  {
+                      "CloudFormationLambdaArn" : "${CloudFormationLambdaProd.Arn}",
+                      "Environment": "prod",
+                      "SharedStack":"video-shared-prod"
+                  }
+              RunOrder: 1
+
+  #
+  # Sandbox environment
+  #
+  VideoPipelinesSandbox:
+    Description: The pipeline that will generate other pipelines
+    Type: AWS::CodePipeline::Pipeline
+    DependsOn:
+      - CloudFormationLambdaSandbox
+      - CodeBuildSandbox
+    Properties:
+      Name: video-pipelines
+      RestartExecutionOnUpdate: True
+      RoleArn: !GetAtt CodePipelineRole.Arn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref PipelinesBucket
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: CloneRepository
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Version: 1
+                Provider: GitHub
+              OutputArtifacts:
+                - Name: GroupSource
+              Configuration:
+                Owner: !Ref GitHubOwner
+                Branch: 'develop'
+                Repo: !Sub aws-group-${ApplicationGroup} # This repo
+                OAuthToken: !Ref GitHubToken
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: BuildCustomResources
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              Configuration:
+                ProjectName: !Ref CodeBuildSandbox
+              InputArtifacts:
+                - Name: GroupSource
+              OutputArtifacts:
+                - Name: BuildOutput
+        - Name: Shared
+          Actions:
+            - Name: SharedInfrastructure
+              InputArtifacts:
+                - Name: GroupSource
+                - Name: BuildOutput
+              OutputArtifacts:
+                - Name: SharedOutput
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration:
+                TemplatePath: !Sub "GroupSource::cloudformation/shared.yml"
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_NAMED_IAM
+                RoleArn: !GetAtt CloudFormationRole.Arn
+                StackName: video-shared-sandbox
+                ParameterOverrides: !Sub |
+                  {
+                      "CloudFormationLambdaArn" : "${CloudFormationLambdaSandbox.Arn}",
+                      "Environment": "sandbox"
+                  }
+              RunOrder: 1
+        - Name: Goldfish
+          Actions:
+            - Name: GoldfishInfrastructure
+              InputArtifacts:
+                - Name: GroupSource
+                - Name: BuildOutput
+                - Name: SharedOutput
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration:
+                TemplatePath: !Sub "GroupSource::cloudformation/goldfish.yml"
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_NAMED_IAM
+                RoleArn: !GetAtt CloudFormationRole.Arn
+                StackName: video-goldfish-sandbox
+                ParameterOverrides: !Sub |
+                  {
+                      "CloudFormationLambdaArn" : "${CloudFormationLambdaSandbox.Arn}",
+                      "Environment":"sandbox",
+                      "SharedStack":"video-shared-sandbox"
+                  }
+              RunOrder: 1
+        - Name: VideoApi
+          Actions:
+            - Name: VideoApiInfrastructure
+              InputArtifacts:
+                - Name: GroupSource
+                - Name: BuildOutput
+                - Name: SharedOutput
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration:
+                TemplatePath: !Sub "GroupSource::cloudformation/video-api.yml"
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_NAMED_IAM
+                RoleArn: !GetAtt CloudFormationRole.Arn
+                StackName: video-video-api-sandbox
+                ParameterOverrides: !Sub |
+                  {
+                      "CloudFormationLambdaArn" : "${CloudFormationLambdaSandbox.Arn}",
+                      "Environment": "sandbox",
+                      "SharedStack":"video-shared-sandbox"
+                  }
+              RunOrder: 1
+        - Name: TranscoderService
+          Actions:
+            - Name: TranscoderServiceInfrastructure
+              InputArtifacts:
+                - Name: GroupSource
+                - Name: BuildOutput
+                - Name: SharedOutput
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration:
+                TemplatePath: !Sub "GroupSource::cloudformation/transcoder.yml"
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_NAMED_IAM
+                RoleArn: !GetAtt CloudFormationRole.Arn
+                StackName: video-transcoder-sandbox
+                ParameterOverrides: !Sub |
+                  {
+                      "CloudFormationLambdaArn" : "${CloudFormationLambdaSandbox.Arn}",
+                      "Environment": "sandbox",
+                      "SharedStack":"video-shared-sandbox"
+                  }
+              RunOrder: 1
+
+Outputs:
+  PipelinesBucket:
+    Value: !Ref PipelinesBucket
+    Description: S3 bucket for pipeline artifacts
+    Export:
+      Name: PipelinesBucket
+  CloudFormationRoleArn:
+    Value: !GetAtt CloudFormationRole.Arn
+    Description: CloudFormationRole for pipelines
+    Export:
+      Name: PipelinesCloudFormationRoleArn
+  CodePipelineRoleArn:
+    Value: !GetAtt CodePipelineRole.Arn
+    Description: CodePipelineRole for pipelines
+    Export:
+      Name: PipelinesCodePipelineRoleArn
