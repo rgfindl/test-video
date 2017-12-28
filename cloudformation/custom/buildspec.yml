@@ -17,7 +17,7 @@ phases:
       - npm install --production
   post_build:
     commands:
-      - ./zip.sh
+      - zip -r build.zip .
       - update-function-code --function-name "${CloudFormationLambda}" --zip-file build.zip --publish
 artifacts:
   base-directory: 'cloudformation/custom'
