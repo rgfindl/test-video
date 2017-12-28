@@ -31,10 +31,10 @@ Parameters:
       r3.8xlarge, i2.xlarge, i2.2xlarge, i2.4xlarge, i2.8xlarge]
     ConstraintDescription: Please choose a valid instance type.
 
-  ApplicationGroup:
-    Description: This application group
-    Type: "AWS::SSM::Parameter::Value<String>"
-    Default: "/application-group/name"
+#  ApplicationGroup:
+#    Description: This application group
+#    Type: "AWS::SSM::Parameter::Value<String>"
+#    Default: "/application-group/name"
 
   Environment:
     Description: Environment - prod or sandbox
