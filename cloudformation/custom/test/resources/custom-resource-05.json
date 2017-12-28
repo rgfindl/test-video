@@ -1,0 +1,17 @@
+{
+  "RequestType" : "Delete",
+  "ResponseURL" : "http://pre-signed-S3-url-for-response",
+  "StackId" : "arn:aws:cloudformation:us-west-2:EXAMPLE/stack-name/guid",
+  "RequestId" : "unique id for this create request",
+  "ResourceType" : "Custom::ElasticTranscoder",
+  "PhysicalResourceId" : "1",
+  "ResourceProperties" : {
+    "Resource" : "ElasticTranscoder",
+    "Environment": "prod",
+    "InBucket": "in",
+    "OutBucket": "out",
+    "ThumbnailsBucket": "thumb",
+    "TopicArn": "sns",
+    "TranscoderRole": "role"
+  }
+}

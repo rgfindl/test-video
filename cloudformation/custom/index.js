@@ -7,6 +7,7 @@ const cfn_response = require('cfn-response');
 
 const ec2 = require('./lib/ec2');
 const s3 = require('./lib/s3');
+const elastictranscoder = require('./lib/elastictranscoder');
 
 const KEY_PAIR_NAME = "video";
 const KEY_PAIR_S3 = "EC2-KEY-PAIR";
@@ -58,6 +59,53 @@ exports.handler = function(event, context) {
                     }
                 });
                 break;
+            case 'ElasticTranscoder':
+                var params = {
+                    InputBucket: event.ResourceProperties.InBucket, /* required */
+                    Name: 'video-pipeline-'+event.ResourceProperties.Environment, /* required */
+                    Role: event.ResourceProperties.TranscoderRole, /* required */
+                    ContentConfig: {
+                        Bucket: event.ResourceProperties.OutBucket,
+                        StorageClass: 'Standard'
+                    },
+                    Notifications: {
+                        Completed: event.ResourceProperties.TopicArn,
+                        Error: event.ResourceProperties.TopicArn,
+                        Progressing: event.ResourceProperties.TopicArn,
+                        Warning: event.ResourceProperties.TopicArn
+                    },
+                    ThumbnailConfig: {
+                        Bucket: event.ResourceProperties.ThumbnailsBucket,
+                        StorageClass: 'Standard'
+                    }
+                };
+                elastictranscoder.createPipeline(params, function(err, data) {
+                    if (err) {
+                        winston.error(err);
+                        cfn_response.send(event, context, cfn_response.FAILED, err);
+                    } else {
+                        cfn_response.send(event, context, cfn_response.SUCCESS, {
+                            Id: data.Pipeline.Id,
+                            Arn: data.Pipeline.Arn,
+                            Name: data.Pipeline.Name
+                        }, data.Pipeline.Id);
+                    }
+                });
+                break;
+            case 'TranscoderPresets':
+                var params = {
+                    presets: require('./resources/presets.json'),
+                    environment: event.ResourceProperties.Environment
+                };
+                elastictranscoder.createPresets(params, function(err, data) {
+                    if (err) {
+                        winston.error(err);
+                        cfn_response.send(event, context, cfn_response.FAILED, err);
+                    } else {
+                        cfn_response.send(event, context, cfn_response.SUCCESS, data);
+                    }
+                });
+                break;
             default:
                 console.log('no case match, sending success response');
                 cfn_response.send(event, context, cfn_response.SUCCESS);
@@ -89,6 +137,19 @@ exports.handler = function(event, context) {
                         s3.deleteObject(params, next);
                     }
                 ], function(err, results) {
+                    if (err) {
+                        winston.error(err);
+                        cfn_response.send(event, context, cfn_response.FAILED, err);
+                    } else {
+                        cfn_response.send(event, context, cfn_response.SUCCESS);
+                    }
+                });
+                break;
+            case 'ElasticTranscoder':
+                var params = {
+                    Id: event.PhysicalResourceId
+                };
+                elastictranscoder.deletePipeline(params, function(err, data) {
                     if (err) {
                         winston.error(err);
                         cfn_response.send(event, context, cfn_response.FAILED, err);

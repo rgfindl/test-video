@@ -88,4 +88,88 @@ describe('index', function() {
             done: done
         });
     });
+
+    it('transcoder - CREATE', function (done) {
+        var cfn_response = {
+            send: function (event, context, responseStatus, responseData, physicalResourceId) {
+                assert.equal(responseStatus, 'SUCCESS');
+                assert.equal(physicalResourceId, '1');
+                context.done();
+            }
+        };
+        var elastictranscoder = {
+            createPipeline: function(params, done) {
+                winston.info('elastictranscoder.createPipeline');
+                //winston.info(JSON.stringify(params, null, 3));
+                assert.equal(params.InputBucket, 'in');
+                done(null, {
+                    Pipeline: {
+                        Id: '1',
+                        Arn: 'arn',
+                        Name: 'name'
+                    }
+                });
+            }
+        };
+        var index = proxyquire('../index', {
+            "cfn-response": cfn_response,
+            "./lib/elastictranscoder": elastictranscoder
+        });
+        process.env.PipelinesBucket = 'bucket';
+        index.handler(require('./resources/custom-resource-04.json'), {
+            done: done
+        });
+    });
+    it('transcoder - DELETE', function (done) {
+        var cfn_response = {
+            send: function (event, context, responseStatus, responseData, physicalResourceId) {
+                assert.equal(responseStatus, 'SUCCESS');
+                context.done();
+            }
+        };
+        var elastictranscoder = {
+            deletePipeline: function(params, done) {
+                winston.info('elastictranscoder.deletePipeline');
+                winston.info(JSON.stringify(params, null, 3));
+                assert.equal(params.Id, '1');
+                done(null, {});
+            }
+        };
+        var index = proxyquire('../index', {
+            "cfn-response": cfn_response,
+            "./lib/elastictranscoder": elastictranscoder
+        });
+        process.env.PipelinesBucket = 'bucket';
+        index.handler(require('./resources/custom-resource-05.json'), {
+            done: done
+        });
+    });
+
+    it('presets - CREATE', function (done) {
+        var cfn_response = {
+            send: function (event, context, responseStatus, responseData, physicalResourceId) {
+                assert.equal(responseStatus, 'SUCCESS');
+                assert.equal(responseData['Id1'], '1');
+                context.done();
+            }
+        };
+        var elastictranscoder = {
+            createPresets: function(params, done) {
+                winston.info('elastictranscoder.createPresets');
+                //winston.info(JSON.stringify(params, null, 3));
+                assert.equal(params.presets[0].Name, 'WP preset: Generic 720p-16:9 mp4-Fit *');
+                done(null, {
+                    "Id1": "1"
+                });
+            }
+        };
+        var index = proxyquire('../index', {
+            "cfn-response": cfn_response,
+            "./lib/elastictranscoder": elastictranscoder
+        });
+        process.env.PipelinesBucket = 'bucket';
+        index.handler(require('./resources/custom-resource-06.json'), {
+            done: done
+        });
+    });
 });
