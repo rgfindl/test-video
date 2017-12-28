@@ -142,9 +142,9 @@ Resources:
   ECSHostBaseIngress:
       Type: AWS::EC2::SecurityGroupIngress
       Properties:
-        GroupName: !Ref ECSHostSecurityGroup
+        GroupNId: !Ref ECSHostSecurityGroup
         IpProtocol: -1
-        SourceSecurityGroupName: !Ref ECSHostSecurityGroup
+        SourceSecurityGroupId: !Ref ECSHostSecurityGroup
 
   #############################
   # ECS
