@@ -18,7 +18,7 @@ phases:
   post_build:
     commands:
       - zip -r build.zip .
-      - aws lambda update-function-code --function-name "${CloudFormationLambda}" --zip-file build.zip --publish
+      - aws lambda update-function-code --function-name "${CloudFormationLambda}" --zip-file fileb://build.zip --publish
 artifacts:
   base-directory: 'cloudformation/custom'
   files:
