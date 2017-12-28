@@ -21,6 +21,10 @@ Parameters:
 
 Resources:
 
+  #############################
+  # ECR Repository
+  ##############################
+
   Repository:
     Type: AWS::ECR::Repository
     Properties:
@@ -29,6 +33,290 @@ Resources:
           - ''
           - - 'video/transcoder/'
             - Ref: Environment
+
+  #############################
+  # Logs
+  ##############################
+
+  CloudWatchLogsGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName:
+        Fn::Join:
+          - ''
+          - - '/video/transcoder/'
+            - Ref: Environment
+      RetentionInDays: 365
+
+  #############################
+  # Roles
+  ##############################
+
+  # This IAM Role grants the service access to register/unregister with the
+  # Application Load Balancer (ALB). It is based on the default documented here:
+  # http://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_IAM_role.html
+  ServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ecs-service-${AWS::StackName}
+      Path: /
+      AssumeRolePolicyDocument:
+          {
+              "Statement": [{
+                  "Effect": "Allow",
+                  "Principal": { "Service": [ "ecs.amazonaws.com" ]},
+                  "Action": [ "sts:AssumeRole" ]
+              }]
+          }
+      Policies:
+        - PolicyName: !Sub ecs-service-${AWS::StackName}
+          PolicyDocument:
+            {
+                "Version": "2012-10-17",
+                "Statement": [{
+                        "Effect": "Allow",
+                        "Action": [
+                            "ec2:AuthorizeSecurityGroupIngress",
+                            "ec2:Describe*",
+                            "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                            "elasticloadbalancing:Describe*",
+                            "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                            "elasticloadbalancing:DeregisterTargets",
+                            "elasticloadbalancing:DescribeTargetGroups",
+                            "elasticloadbalancing:DescribeTargetHealth",
+                            "elasticloadbalancing:RegisterTargets"
+                        ],
+                        "Resource": "*"
+                }]
+            }
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ecs-task-${AWS::StackName}
+      Path: /
+      AssumeRolePolicyDocument:
+          {
+              "Statement": [{
+                  "Effect": "Allow",
+                  "Principal": { "Service": [ "ecs-tasks.amazonaws.com" ]},
+                  "Action": [ "sts:AssumeRole" ]
+              }]
+          }
+      Policies:
+        - PolicyName: !Sub ecs-task-${AWS::StackName}
+          PolicyDocument:
+            {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Action": "s3:*",
+                        "Resource": "*"
+                    }
+                ]
+            },
+            {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Action": [
+                            "elastictranscoder:*",
+                            "cloudfront:*",
+                            "s3:List*",
+                            "s3:Put*",
+                            "s3:Get*",
+                            "s3:*MultipartUpload*",
+                            "iam:CreateRole",
+                            "iam:GetRolePolicy",
+                            "iam:PassRole",
+                            "iam:PutRolePolicy",
+                            "iam:List*",
+                            "sns:CreateTopic",
+                            "sns:List*"
+                        ],
+                        "Effect": "Allow",
+                        "Resource": "*"
+                    }
+                ]
+            }
+
+  #############################
+  # ElasticTranscoder
+  ##############################
+
+  #
+  # IN/OUT buckets
+  #
+  TranscoderInBucket:
+    Description: The shared elastic transcoder IN bucket
+    Type: AWS::S3::Bucket
+
+  TranscoderOutBucket:
+    Description: The shared elastic transcoder OUT bucket
+    Type: AWS::S3::Bucket
+
+  ThumbnailsBucket:
+    Description: The shared elastic transcoder Thumbnails bucket
+    Type: AWS::S3::Bucket
+
+  #
+  # SNS Topic
+  #
+  TranscoderSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName:
+        Fn::Join:
+          - ''
+          - - 'Goldfish Transcoder Job Status - '
+            - Ref: Environment
+      TopicName:
+        Fn::Join:
+          - ''
+          - - 'goldfish-transcoder-job-status-'
+            - Ref: Environment
+
+  TranscoderSNSPolicy:
+    Type: 'AWS::SNS::TopicPolicy'
+    Properties:
+      Topics:
+        - !Ref TranscoderSNSTopic
+      PolicyDocument:
+        Statement:
+          - Action:
+              - 'SNS:GetTopicAttributes'
+              - 'SNS:SetTopicAttributes'
+              - 'SNS:AddPermission'
+              - 'SNS:RemovePermission'
+              - 'SNS:DeleteTopic'
+              - 'SNS:Subscribe'
+              - 'SNS:ListSubscriptionsByTopic'
+              - 'SNS:Publish'
+              - 'SNS:Receive'
+            Effect: 'Allow'
+            Resource: !Ref TranscoderSNSTopic
+            Principal:
+              AWS: '*'
+            Condition:
+              StringEquals:
+                AWS:SourceOwner: !Ref AWS::AccountId
+  #
+  # SQS Queue
+  #
+  TranscoderSQS:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName:
+        Fn::Join:
+          - ''
+          - - 'transcoder-job-status-'
+            - Ref: Environment
+
+
+  TranscoderSQSPolicy:
+    Type: 'AWS::SQS::QueuePolicy'
+    Properties:
+      Queues:
+        - !Ref TranscoderSQS
+      PolicyDocument:
+        Statement:
+          - Action:
+              - 'SQS:SendMessage'
+            Effect: 'Allow'
+            Resource: !GetAtt TranscoderSQS.Arn
+            Principal: '*'
+            Condition:
+              ArnEquals:
+                AWS:SourceArn: !Ref TranscoderSNSTopic
+          - Action:
+              - 'SQS:*'
+            Effect: 'Allow'
+            Resource: !GetAtt TranscoderSQS.Arn
+            Principal:
+              AWS: !Ref TaskRole
+
+  #
+  # Subscribe our new SQS to the SNS topic.
+  #
+  TranscoderSQSSNSSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref TranscoderSNSTopic
+      Protocol: sqs
+      Endpoint: !GetAtt TranscoderSQS.Arn
+
+  #
+  # Transcoder policy.
+  #
+  TranscoderRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "elastictranscoder.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        -
+          PolicyName: "TranscoderRolePolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action:
+                  - "s3:Put*"
+                  - "s3:ListBucket"
+                  - "s3:*MultipartUpload*"
+                  - "s3:Get*"
+                Resource: "*"
+              -
+                Effect: "Allow"
+                Action:
+                  - "sns:Publish"
+                Resource: "*"
+              -
+                Effect: "Deny"
+                Action:
+                  - "s3:*Delete*"
+                  - "s3:*Policy*"
+                  - "sns:*Remove*"
+                  - "sns:*Delete*"
+                  - "sns:*Permission*"
+                Resource: "*"
+
+  #
+  # Elastic Transcoder Presets
+  #
+  TranscoderPresets:
+    Type: Custom::TranscoderPresets
+    Version: "1.0"
+    Properties:
+      ServiceToken: !Ref CloudFormationLambdaArn
+      Resource: TranscoderPresets
+      Environment: !Ref Environment
+
+  #
+  # Elastic Transcoder
+  #
+  ElasticTranscoder:
+    Type: Custom::ElasticTranscoder
+    Version: "1.0"
+    Properties:
+      ServiceToken: !Ref CloudFormationLambdaArn
+      Resource: ElasticTranscoder
+      Environment: !Ref Environment
+      InBucket: !Ref TranscoderInBucket
+      OutBucket: !Ref TranscoderOutBucket
+      ThumbnailsBucket: !Ref ThumbnailsBucket
+      TopicArn: !Ref TranscoderSNSTopic
+      TranscoderRole: !GetAtt TranscoderRole.Arn
 
 Outputs:
   Repository:
@@ -39,3 +327,15 @@ Outputs:
     Value: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repository}"
     Export:
       Name: !Sub '${AWS::StackName}-RepositoryUrl'
+  ElasticTranscoderId:
+    Value: !GetAtt ElasticTranscoder.Id
+    Export:
+      Name: !Sub '${AWS::StackName}-ElasticTranscoderId'
+  ElasticTranscoderArn:
+    Value: !GetAtt ElasticTranscoder.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-ElasticTranscoderArn'
+  ElasticTranscoderName:
+    Value: !GetAtt ElasticTranscoder.Name
+    Export:
+      Name: !Sub '${AWS::StackName}-ElasticTranscoderName'
