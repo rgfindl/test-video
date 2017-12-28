@@ -5,9 +5,8 @@ const async = require('async');
 const _ = require('lodash');
 const cfn_response = require('cfn-response');
 
-const AWS = require('aws-sdk');
-const ec2 = new AWS.EC2();
-const s3 = new AWS.S3();
+const ec2 = require('./lib/ec2');
+const s3 = require('./lib/s3');
 
 const KEY_PAIR_NAME = "video";
 const KEY_PAIR_S3 = "EC2-KEY-PAIR";
@@ -40,7 +39,7 @@ exports.handler = function(event, context) {
                     function(data, next) {
                         var params = {
                             ACL: "private",
-                            Body: data,
+                            Body: Buffer.from(JSON.stringify(data, null, 3)),
                             Bucket: process.env.PipelinesBucket,
                             Key: KEY_PAIR_S3+'-'+event.ResourceProperties.Environment
                         };

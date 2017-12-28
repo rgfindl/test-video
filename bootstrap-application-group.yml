@@ -314,7 +314,6 @@ Resources:
       - CloudFormationLambdaProd
       - CodeBuildProd
     Properties:
-      Name: video-pipelines
       RestartExecutionOnUpdate: True
       RoleArn: !GetAtt CodePipelineRole.Arn
       ArtifactStore:
@@ -466,7 +465,6 @@ Resources:
       - CloudFormationLambdaSandbox
       - CodeBuildSandbox
     Properties:
-      Name: video-pipelines
       RestartExecutionOnUpdate: True
       RoleArn: !GetAtt CodePipelineRole.Arn
       ArtifactStore:

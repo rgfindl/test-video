@@ -1,0 +1,12 @@
+{
+  "RequestType" : "Delete",
+  "ResponseURL" : "http://pre-signed-S3-url-for-response",
+  "StackId" : "arn:aws:cloudformation:us-west-2:EXAMPLE/stack-name/guid",
+  "RequestId" : "unique id for this create request",
+  "ResourceType" : "Custom::KeyPair",
+  "LogicalResourceId" : "MyTestResource",
+  "ResourceProperties" : {
+    "Resource" : "KeyPair",
+    "Environment": "prod"
+  }
+}
