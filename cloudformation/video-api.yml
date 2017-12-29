@@ -34,14 +34,6 @@ Parameters:
     Description: GitHub repository name
     Default: 'test-video-service2' # TODO 'Post.TV'
 
-  CloudFormationRole:
-    Type: String
-    Description: CloudFormationRole
-
-  CodePipelineRole:
-    Type: String
-    Description: CodePipelineRole
-
 Resources:
 
   ##############################

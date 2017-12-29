@@ -402,9 +402,7 @@ Resources:
                       "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-prod",
                       "GitHubOwner": "${GitHubOwner}",
-                      "GitHubToken": "${GitHubToken}",
-                      "CloudFormationRole": "${CloudFormationRole.Arn}",
-                      "CodePipelineRole": "${CodePipelineRole.Arn}"
+                      "GitHubToken": "${GitHubToken}"
                   }
               RunOrder: 1
             - Name: VideoApiInfrastructure
@@ -430,9 +428,7 @@ Resources:
                       "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-prod",
                       "GitHubOwner": "${GitHubOwner}",
-                      "GitHubToken": "${GitHubToken}",
-                      "CloudFormationRole": "${CloudFormationRole.Arn}",
-                      "CodePipelineRole": "${CodePipelineRole.Arn}"
+                      "GitHubToken": "${GitHubToken}"
                   }
               RunOrder: 1
             - Name: TranscoderPresetsInfrastructure
@@ -482,9 +478,7 @@ Resources:
                       "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-prod",
                       "GitHubOwner": "${GitHubOwner}",
-                      "GitHubToken": "${GitHubToken}",
-                      "CloudFormationRole": "${CloudFormationRole.Arn}",
-                      "CodePipelineRole": "${CodePipelineRole.Arn}"
+                      "GitHubToken": "${GitHubToken}"
                   }
               RunOrder: 2
 
@@ -585,9 +579,7 @@ Resources:
                       "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-sandbox",
                       "GitHubOwner": "${GitHubOwner}",
-                      "GitHubToken": "${GitHubToken}",
-                      "CloudFormationRole": "${CloudFormationRole.Arn}",
-                      "CodePipelineRole": "${CodePipelineRole.Arn}"
+                      "GitHubToken": "${GitHubToken}"
                   }
               RunOrder: 1
             - Name: VideoApiInfrastructure
@@ -613,9 +605,7 @@ Resources:
                       "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-sandbox",
                       "GitHubOwner": "${GitHubOwner}",
-                      "GitHubToken": "${GitHubToken}",
-                      "CloudFormationRole": "${CloudFormationRole.Arn}",
-                      "CodePipelineRole": "${CodePipelineRole.Arn}"
+                      "GitHubToken": "${GitHubToken}"
                   }
               RunOrder: 1
             - Name: TranscoderPresetsInfrastructure
@@ -665,9 +655,7 @@ Resources:
                       "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-sandbox",
                       "GitHubOwner": "${GitHubOwner}",
-                      "GitHubToken": "${GitHubToken}",
-                      "CloudFormationRole": "${CloudFormationRole.Arn}",
-                      "CodePipelineRole": "${CodePipelineRole.Arn}"
+                      "GitHubToken": "${GitHubToken}"
                   }
               RunOrder: 2
 

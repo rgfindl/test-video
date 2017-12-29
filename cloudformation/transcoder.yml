@@ -34,14 +34,6 @@ Parameters:
     Description: GitHub repository name
     Default: 'test-video-service3' # TODO 'PostTV-ElasticTranscoder'
 
-  CloudFormationRole:
-    Type: String
-    Description: CloudFormationRole
-
-  CodePipelineRole:
-    Type: String
-    Description: CodePipelineRole
-
 Resources:
 
   ##############################

@@ -34,13 +34,13 @@ Parameters:
     Description: GitHub repository name
     Default: 'test-video-service1' # TODO 'Post.TV'
 
-  CloudFormationRole:
+  Version:
     Type: String
-    Description: CloudFormationRole
+    Description: ECR version to deploy
+    Default: 'latest'
 
-  CodePipelineRole:
-    Type: String
-    Description: CodePipelineRole
+Conditions:
+  IsProd: !Equals [!Ref Environment, 'master']
 
 Mappings:
   Branch:
@@ -63,6 +63,107 @@ Resources:
           - ''
           - - 'video/goldfish/'
             - Ref: Environment
+
+  #############################
+  # Roles
+  #############################
+
+
+  #
+  # IAM Role needed by the pipelines
+  #
+  CodePipelineRole:
+    Description: The role CodePipeline will assume during pipeline execution
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+            Effect: Allow
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+            Action: sts:AssumeRole
+
+  CodePipelinePolicy:
+    Description: Policy for the CodePipeline Role
+    DependsOn: CodePipelineRole
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName:
+        Fn::Join:
+          - ''
+          - - Ref: AWS::StackName
+            - '-pipeline-policy'
+      Roles:
+        - !Ref CodePipelineRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - s3:*
+            Effect: Allow
+            Resource:
+              - !GetAtt PipelinesBucket.Arn
+              - !Join ["", [!GetAtt PipelinesBucket.Arn, "*"]]
+          - Action:
+              - cloudformation:*
+            Effect: Allow
+            Resource:
+              - !Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/video-*
+          - Action:
+              - codepipeline:*
+            Effect: Allow
+            Resource:
+              - !Sub arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:video-*
+          - Action:
+              - codebuild:StartBuild
+              - codebuild:BatchGetBuilds
+              - codebuild:StopBuild
+            Effect: Allow
+            Resource:
+              - '*'
+          - Action:
+              - iam:PassRole
+            Effect: Allow
+            Resource:
+              - !GetAtt CloudFormationRole.Arn
+
+  #
+  # IAM Role needed by cloudformation
+  #
+  CloudFormationRole:
+    Description: The role cloudformation will assume during pipeline execution
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+            Effect: Allow
+            Principal:
+              Service:
+                - cloudformation.amazonaws.com
+            Action: sts:AssumeRole
+  CloudFormationPolicy:
+    Description: Policy for the cloudformation execution Role
+    DependsOn: CloudFormationRole
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName:
+        Fn::Join:
+          - ''
+          - - Ref: AWS::StackName
+            - '-cloudformation-policy'
+      Roles:
+        - !Ref CloudFormationRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - '*'
+            Resource:
+              - '*'
 
   #############################
   # CodePipeline
@@ -169,13 +270,13 @@ Resources:
   #
   # CodePipeline
   #
-  CodePipelineProd:
+  CodePipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
       ArtifactStore:
         Type: S3
         Location: !Ref ArtifactsBucket
-      RoleArn: !Ref CodePipelineRole
+      RoleArn: !GetAtt CodePipelineRole.Arn
       Stages:
       - Name: Source
         Actions:
@@ -221,21 +322,30 @@ Resources:
               TemplatePath: !Sub "GroupSource::cloudformation.yml"
               ActionMode: CREATE_UPDATE
               Capabilities: CAPABILITY_NAMED_IAM
-              RoleArn: !Ref CloudFormationRole
+              RoleArn: !GetAtt CloudFormationRole.Arn
               StackName:
                 Fn::Join:
                   - ''
                   - - 'video-goldfish-app-'
                     - Ref: Environment
-              ParameterOverrides: !Sub |
-                {
-                    "CloudFormationLambdaArn" : "${CloudFormationLambdaArn}",
-                    "VPCStack": "${VPCStack}",
-                    "SharedStack": "${SharedStack}",
-                    "BuildStack": "${AWS::StackName}",
-                    "Environment": "${Environment}",
-                    "Version" : { "Fn::GetParam" : ["BuildOutput", "version.json", "version"]}
-                }
+              ParameterOverrides:
+                Fn::Join:
+                  - ''
+                  - - '{'
+                    - Sub: '"CloudFormationLambdaArn" : "${CloudFormationLambdaArn}"'
+                    - ','
+                    - Sub: '"VPCStack" : "${VPCStack}"'
+                    - ','
+                    - Sub: '"SharedStack" : "${SharedStack}"'
+                    - ','
+                    - Sub: '"BuildStack" : "${AWS::StackName}"'
+                    - ','
+                    - Sub: '"Environment" : "${Environment}"'
+                    - ','
+                    - Sub: '"Version" : "'
+                    - !If [IsProd, { "Fn::Ref" : "Version"}, { "Fn::GetParam" : ["BuildOutput", "version.json", "version"]}]
+                    - '"'
+                    - '}'
             RunOrder: 1
 
 Outputs:
