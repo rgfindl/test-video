@@ -1,0 +1,122 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: The Video application - transcoder template.
+
+Resources:
+
+  ################################
+  # Elastic Transcoder Presets
+  ################################
+  TranscoderPreset01:
+    Type: Custom::TranscoderPreset
+    Version: "1.0"
+    Properties:
+      ServiceToken: !Ref CloudFormationLambdaArn
+      Resource: TranscoderPreset
+      Params:
+        {
+
+          "Name": "WP:Generic 720p-16:9 mp4-Fit",
+          "Description": "16:9 Video Preset Id with watermark",
+          "Container": "mp4",
+          "Audio": {
+            "Codec": "AAC",
+            "SampleRate": "44100",
+            "BitRate": "160",
+            "Channels": "2",
+            "AudioPackingMode": null,
+            "CodecOptions": {
+              "Profile": "AAC-LC",
+              "BitDepth": null,
+              "BitOrder": null,
+              "Signed": null
+            }
+          },
+          "Video": {
+            "Codec": "H.264",
+            "CodecOptions": {
+              "ColorSpaceConversionMode": "None",
+              "InterlacedMode": "Progressive",
+              "Level": "3.1",
+              "MaxReferenceFrames": "3",
+              "Profile": "baseline"
+            },
+            "KeyframesMaxDist": "90",
+            "FixedGOP": "false",
+            "BitRate": "2000",
+            "FrameRate": "29.97",
+            "MaxFrameRate": null,
+            "Resolution": null,
+            "AspectRatio": null,
+            "MaxWidth": "1280",
+            "MaxHeight": "720",
+            "DisplayAspectRatio": "auto",
+            "SizingPolicy": "Fit",
+            "PaddingPolicy": "Pad",
+            "Watermarks": [
+              {
+                "Id": "TopLeft",
+                "MaxWidth": "15%",
+                "MaxHeight": "15%",
+                "SizingPolicy": "ShrinkToFit",
+                "HorizontalAlign": "Left",
+                "HorizontalOffset": "5%",
+                "VerticalAlign": "Top",
+                "VerticalOffset": "3%",
+                "Opacity": "50",
+                "Target": "Content"
+              },
+              {
+                "Id": "TopRight",
+                "MaxWidth": "15%",
+                "MaxHeight": "15%",
+                "SizingPolicy": "ShrinkToFit",
+                "HorizontalAlign": "Right",
+                "HorizontalOffset": "5%",
+                "VerticalAlign": "Top",
+                "VerticalOffset": "3%",
+                "Opacity": "50",
+                "Target": "Content"
+              },
+              {
+                "Id": "BottomLeft",
+                "MaxWidth": "15%",
+                "MaxHeight": "15%",
+                "SizingPolicy": "ShrinkToFit",
+                "HorizontalAlign": "Left",
+                "HorizontalOffset": "5%",
+                "VerticalAlign": "Bottom",
+                "VerticalOffset": "3%",
+                "Opacity": "50",
+                "Target": "Content"
+              },
+              {
+                "Id": "BottomRight",
+                "MaxWidth": "15%",
+                "MaxHeight": "15%",
+                "SizingPolicy": "ShrinkToFit",
+                "HorizontalAlign": "Right",
+                "HorizontalOffset": "5%",
+                "VerticalAlign": "Bottom",
+                "VerticalOffset": "3%",
+                "Opacity": "50",
+                "Target": "Content"
+              }
+            ]
+          },
+          "Thumbnails": {
+            "Format": "png",
+            "Interval": "10",
+            "Resolution": null,
+            "AspectRatio": null,
+            "MaxWidth": "192",
+            "MaxHeight": "108",
+            "SizingPolicy": "Fit",
+            "PaddingPolicy": "Pad"
+          }
+        }
+
+Outputs:
+  TranscoderPreset01:
+    Value: !GetAtt TranscoderPreset01.Id
+    Export:
+      Name: !Sub '${AWS::StackName}-TranscoderPreset01'

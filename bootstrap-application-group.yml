@@ -426,11 +426,31 @@ Resources:
                       "SharedStack":"video-shared-prod"
                   }
               RunOrder: 1
+            - Name: TranscoderPresetsInfrastructure
+              InputArtifacts:
+                - Name: GroupSource
+                - Name: BuildOutput
+                - Name: SharedOutput
+              OutputArtifacts:
+                - Name: PresetsOutput
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration:
+                TemplatePath: !Sub "GroupSource::cloudformation/presets.yml"
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_NAMED_IAM
+                RoleArn: !GetAtt CloudFormationRole.Arn
+                StackName: transcoder-presets
+              RunOrder: 1
             - Name: TranscoderServiceInfrastructure
               InputArtifacts:
                 - Name: GroupSource
                 - Name: BuildOutput
                 - Name: SharedOutput
+                - Name: PresetsOutput
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
@@ -449,7 +469,7 @@ Resources:
                       "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-prod"
                   }
-              RunOrder: 1
+              RunOrder: 2
 
   #
   # Sandbox environment
@@ -573,11 +593,31 @@ Resources:
                       "SharedStack":"video-shared-sandbox"
                   }
               RunOrder: 1
+            - Name: TranscoderPresetsInfrastructure
+              InputArtifacts:
+                - Name: GroupSource
+                - Name: BuildOutput
+                - Name: SharedOutput
+              OutputArtifacts:
+                - Name: PresetsOutput
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration:
+                TemplatePath: !Sub "GroupSource::cloudformation/presets.yml"
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_NAMED_IAM
+                RoleArn: !GetAtt CloudFormationRole.Arn
+                StackName: transcoder-presets
+              RunOrder: 1
             - Name: TranscoderServiceInfrastructure
               InputArtifacts:
                 - Name: GroupSource
                 - Name: BuildOutput
                 - Name: SharedOutput
+                - Name: PresetsOutput
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
@@ -596,7 +636,7 @@ Resources:
                       "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-sandbox"
                   }
-              RunOrder: 1
+              RunOrder: 2
 
 Outputs:
   PipelinesBucket:

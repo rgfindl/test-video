@@ -92,17 +92,22 @@ exports.handler = function(event, context) {
                     }
                 });
                 break;
-            case 'TranscoderPresets':
-                var params = {
-                    presets: require('./resources/presets.json'),
-                    environment: event.ResourceProperties.Environment
-                };
-                elastictranscoder.createPresets(params, function(err, data) {
+            case 'TranscoderPreset':
+                var params = event.ResourceProperties.Params;
+                if (_.isNil(params.Description)) {
+                    params.Description = params.Name;
+                }
+                console.log(JSON.stringify(params, null, 3));
+                elastictranscoder.createPreset(params, function(err, data) {
                     if (err) {
                         winston.error(err);
                         cfn_response.send(event, context, cfn_response.FAILED, err);
                     } else {
-                        cfn_response.send(event, context, cfn_response.SUCCESS, data);
+                        cfn_response.send(event, context, cfn_response.SUCCESS, {
+                            Id: data.Preset.Id,
+                            Arn: data.Preset.Arn,
+                            Name: data.Preset.Name
+                        }, data.Preset.Id);
                     }
                 });
                 break;
@@ -150,6 +155,19 @@ exports.handler = function(event, context) {
                     Id: event.PhysicalResourceId
                 };
                 elastictranscoder.deletePipeline(params, function(err, data) {
+                    if (err) {
+                        winston.error(err);
+                        cfn_response.send(event, context, cfn_response.FAILED, err);
+                    } else {
+                        cfn_response.send(event, context, cfn_response.SUCCESS);
+                    }
+                });
+                break;
+            case 'TranscoderPreset':
+                var params = {
+                    Id: event.PhysicalResourceId
+                };
+                elastictranscoder.deletePreset(params, function(err, data) {
                     if (err) {
                         winston.error(err);
                         cfn_response.send(event, context, cfn_response.FAILED, err);

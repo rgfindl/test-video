@@ -287,17 +287,6 @@ Resources:
                 Resource: "*"
 
   #
-  # Elastic Transcoder Presets
-  #
-  TranscoderPresets:
-    Type: Custom::TranscoderPresets
-    Version: "1.0"
-    Properties:
-      ServiceToken: !Ref CloudFormationLambdaArn
-      Resource: TranscoderPresets
-      Environment: !Ref Environment
-
-  #
   # Elastic Transcoder
   #
   ElasticTranscoder:
