@@ -400,7 +400,10 @@ Resources:
                       "CloudFormationLambdaArn" : "${CloudFormationLambdaProd.Arn}",
                       "Environment":"prod",
                       "VPCStack": "${VPCStack}",
-                      "SharedStack":"video-shared-prod"
+                      "SharedStack":"video-shared-prod",
+                      "GitHubToken": "${GitHubToken}",
+                      "CloudFormationRole": "${CloudFormationRole.Arn}",
+                      "CodePipelineRole": "${CodePipelineRole.Arn}"
                   }
               RunOrder: 1
             - Name: VideoApiInfrastructure
@@ -424,7 +427,10 @@ Resources:
                       "CloudFormationLambdaArn" : "${CloudFormationLambdaProd.Arn}",
                       "Environment": "prod",
                       "VPCStack": "${VPCStack}",
-                      "SharedStack":"video-shared-prod"
+                      "SharedStack":"video-shared-prod",
+                      "GitHubToken": "${GitHubToken}",
+                      "CloudFormationRole": "${CloudFormationRole.Arn}",
+                      "CodePipelineRole": "${CodePipelineRole.Arn}"
                   }
               RunOrder: 1
             - Name: TranscoderPresetsInfrastructure
@@ -472,7 +478,10 @@ Resources:
                       "CloudFormationLambdaArn" : "${CloudFormationLambdaProd.Arn}",
                       "Environment": "prod",
                       "VPCStack": "${VPCStack}",
-                      "SharedStack":"video-shared-prod"
+                      "SharedStack":"video-shared-prod",
+                      "GitHubToken": "${GitHubToken}",
+                      "CloudFormationRole": "${CloudFormationRole.Arn}",
+                      "CodePipelineRole": "${CodePipelineRole.Arn}"
                   }
               RunOrder: 2
 
@@ -571,7 +580,10 @@ Resources:
                       "CloudFormationLambdaArn" : "${CloudFormationLambdaSandbox.Arn}",
                       "Environment":"sandbox",
                       "VPCStack": "${VPCStack}",
-                      "SharedStack":"video-shared-sandbox"
+                      "SharedStack":"video-shared-sandbox",
+                      "GitHubToken": "${GitHubToken}",
+                      "CloudFormationRole": "${CloudFormationRole.Arn}",
+                      "CodePipelineRole": "${CodePipelineRole.Arn}"
                   }
               RunOrder: 1
             - Name: VideoApiInfrastructure
@@ -595,7 +607,10 @@ Resources:
                       "CloudFormationLambdaArn" : "${CloudFormationLambdaSandbox.Arn}",
                       "Environment": "sandbox",
                       "VPCStack": "${VPCStack}",
-                      "SharedStack":"video-shared-sandbox"
+                      "SharedStack":"video-shared-sandbox",
+                      "GitHubToken": "${GitHubToken}",
+                      "CloudFormationRole": "${CloudFormationRole.Arn}",
+                      "CodePipelineRole": "${CodePipelineRole.Arn}"
                   }
               RunOrder: 1
             - Name: TranscoderPresetsInfrastructure
@@ -643,7 +658,10 @@ Resources:
                       "CloudFormationLambdaArn" : "${CloudFormationLambdaSandbox.Arn}",
                       "Environment": "sandbox",
                       "VPCStack": "${VPCStack}",
-                      "SharedStack":"video-shared-sandbox"
+                      "SharedStack":"video-shared-sandbox",
+                      "GitHubToken": "${GitHubToken}",
+                      "CloudFormationRole": "${CloudFormationRole.Arn}",
+                      "CodePipelineRole": "${CodePipelineRole.Arn}"
                   }
               RunOrder: 2
 
