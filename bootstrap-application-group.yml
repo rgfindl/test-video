@@ -444,6 +444,10 @@ Resources:
                 Capabilities: CAPABILITY_NAMED_IAM
                 RoleArn: !GetAtt CloudFormationRole.Arn
                 StackName: video-transcoder-presets
+                ParameterOverrides: !Sub |
+                  {
+                      "CloudFormationLambdaArn" : "${CloudFormationLambdaSandbox.Arn}"
+                  }
               RunOrder: 1
             - Name: TranscoderServiceInfrastructure
               InputArtifacts:
@@ -611,6 +615,10 @@ Resources:
                 Capabilities: CAPABILITY_NAMED_IAM
                 RoleArn: !GetAtt CloudFormationRole.Arn
                 StackName: video-transcoder-presets
+                ParameterOverrides: !Sub |
+                  {
+                      "CloudFormationLambdaArn" : "${CloudFormationLambdaSandbox.Arn}"
+                  }
               RunOrder: 1
             - Name: TranscoderServiceInfrastructure
               InputArtifacts:

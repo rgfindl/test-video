@@ -1,6 +1,11 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: The Video application - transcoder template.
 
+Parameters:
+  CloudFormationLambdaArn:
+    Type: String
+    Description: Lambda that handle's Custom CloudFormation Resources
+
 Resources:
 
   ################################
