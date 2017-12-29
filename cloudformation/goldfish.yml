@@ -344,7 +344,7 @@ Resources:
                     - Sub: '"Environment" : "${Environment}"'
                     - ','
                     - Sub: '"Version" : "'
-                    - !If [IsProd, { "Fn::Ref" : "Version"}, { "Fn::GetParam" : ["BuildOutput", "version.json", "version"]}]
+                    - !If [IsProd, { "Ref" : "Version"}, { "Fn::GetParam" : ["BuildOutput", "version.json", "version"]}]
                     - '"'
                     - '}'
             RunOrder: 1
