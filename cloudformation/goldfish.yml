@@ -306,6 +306,7 @@ Resources:
           - Name: Infrastructure
             InputArtifacts:
               - Name: BuildOutput
+              - Name: SourceOutput
             ActionTypeId:
               Category: Deploy
               Owner: AWS
