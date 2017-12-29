@@ -243,6 +243,48 @@ Resources:
       AutoScalingReplacingUpdate:
         WillReplace: 'true'
 
+
+  #############################
+  # ALB
+  #############################
+
+  #
+  # Load Balancers
+  #
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Ref AWS::StackName
+      Subnets:
+        - Fn::ImportValue:
+            !Sub "${VPCStack}-PublicSubnet1ID"
+        - Fn::ImportValue:
+            !Sub "${VPCStack}-PublicSubnet2ID"
+      SecurityGroups:
+        - !Ref LoadBalancerSecurityGroup
+
+  # We define a default target group here, as this is a mandatory Parameters
+  # when creating an Application Load Balancer Listener. This is not used, instead
+  # a target group is created per-service in each service template (../services/*)
+  DefaultTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ${AWS::StackName}-default
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${VPCStack}-VPCID"
+      Port: 80
+      Protocol: HTTP
+
+  LoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: 'HTTP'
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref DefaultTargetGroup
 Outputs:
   ECSCluster:
     Value: !Ref 'ECSCluster'
@@ -256,3 +298,7 @@ Outputs:
     Value: !Ref ECSRole
     Export:
       Name: !Sub '${AWS::StackName}-ECSRole'
+  LoadBalancerListener:
+    Value: !Ref LoadBalancerListener
+    Export:
+      Name: !Sub '${AWS::StackName}-LoadBalancerListener'

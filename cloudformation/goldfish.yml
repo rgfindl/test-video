@@ -19,10 +19,20 @@ Parameters:
     Type: String
     Default: prod
 
+  GitHubOwner:
+    Description: The name of the GitHub repository owner
+    Type: String
+    Default: WPMedia
+
   GitHubToken:
     Description: GitHubToken
     Type: String
     NoEcho: true
+
+  GitHubRepo:
+    Type: String
+    Description: GitHub repository name
+    Default: 'test-video-service1' # TODO 'Post.TV'
 
   CloudFormationRole:
     Type: String
@@ -31,6 +41,13 @@ Parameters:
   CodePipelineRole:
     Type: String
     Description: CodePipelineRole
+
+Mappings:
+  Branch:
+    prod:
+      BRANCH: 'master'
+    sandbox:
+      BRANCH: 'develop'
 
 Resources:
 
@@ -48,93 +65,178 @@ Resources:
             - Ref: Environment
 
   #############################
-  # Logs
-  ##############################
+  # CodePipeline
+  #############################
 
-  CloudWatchLogsGroup:
-    Type: AWS::Logs::LogGroup
+
+  #
+  # Artifact Bucket
+  #
+  ArtifactsBucket:
+    Type: AWS::S3::Bucket
     Properties:
-      LogGroupName:
+      AccessControl: Private
+
+  #
+  # CodeBuild Permissions
+  #
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+
+  CodeBuildRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: CodeBuildRolePolicy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - s3:*
+            Resource:
+              - !Sub 'arn:aws:s3:::${ArtifactsBucket}'
+              - !Sub 'arn:aws:s3:::${ArtifactsBucket}/*'
+          - Effect: Allow
+            Action:
+              - ecr:GetAuthorizationToken
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - ecr:GetDownloadUrlForLayer
+              - ecr:BatchGetImage
+              - ecr:BatchCheckLayerAvailability
+              - ecr:PutImage
+              - ecr:InitiateLayerUpload
+              - ecr:UploadLayerPart
+              - ecr:CompleteLayerUpload
+            Resource: !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${Repository}"
+          - Effect: Allow
+            Action:
+              - sns:Publish
+            Resource: !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*'
+      Roles:
+        - !Ref CodeBuildRole
+
+  #
+  # CodeBuild
+  #
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/docker:1.12.1
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: AWS_DEFAULT_REGION
+            Value: !Ref AWS::Region
+          - Name: REPOSITORY_URI
+            Value: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repository}"
+          - Name: APP
+            Value: !Ref AWS::StackName
+          #- Name: SNS_TOPIC_ARN
+          #  Value: !If [NeedsBuildNotification, !Ref "BuildTopic", '']
+      Name:
         Fn::Join:
           - ''
-          - - '/video/goldfish/'
+          - - Ref: AWS::StackName
+            - '-code-build-'
             - Ref: Environment
-      RetentionInDays: 365
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspec.yml
+      TimeoutInMinutes: 5 # must be between 5 minutes and 8 hours
 
-  #############################
-  # Roles
-  ##############################
-
-  # This IAM Role grants the service access to register/unregister with the
-  # Application Load Balancer (ALB). It is based on the default documented here:
-  # http://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_IAM_role.html
-  ServiceRole:
-    Type: AWS::IAM::Role
+  #
+  # CodePipeline
+  #
+  CodePipelineProd:
+    Type: AWS::CodePipeline::Pipeline
     Properties:
-      RoleName: !Sub ecs-service-${AWS::StackName}
-      Path: /
-      AssumeRolePolicyDocument:
-          {
-              "Statement": [{
-                  "Effect": "Allow",
-                  "Principal": { "Service": [ "ecs.amazonaws.com" ]},
-                  "Action": [ "sts:AssumeRole" ]
-              }]
-          }
-      Policies:
-        - PolicyName: !Sub ecs-service-${AWS::StackName}
-          PolicyDocument:
-            {
-                "Version": "2012-10-17",
-                "Statement": [{
-                        "Effect": "Allow",
-                        "Action": [
-                            "ec2:AuthorizeSecurityGroupIngress",
-                            "ec2:Describe*",
-                            "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
-                            "elasticloadbalancing:Describe*",
-                            "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
-                            "elasticloadbalancing:DeregisterTargets",
-                            "elasticloadbalancing:DescribeTargetGroups",
-                            "elasticloadbalancing:DescribeTargetHealth",
-                            "elasticloadbalancing:RegisterTargets"
-                        ],
-                        "Resource": "*"
-                }]
-            }
-  TaskRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ecs-task-${AWS::StackName}
-      Path: /
-      AssumeRolePolicyDocument:
-          {
-              "Statement": [{
-                  "Effect": "Allow",
-                  "Principal": { "Service": [ "ecs-tasks.amazonaws.com" ]},
-                  "Action": [ "sts:AssumeRole" ]
-              }]
-          }
-      Policies:
-        - PolicyName: !Sub ecs-task-${AWS::StackName}
-          PolicyDocument:
-            {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Effect": "Allow",
-                        "Action": "s3:*",
-                        "Resource": "*"
-                    },
-                    {
-                        "Effect": "Allow",
-                        "Action": [
-                            "ses:*"
-                        ],
-                        "Resource": "*"
-                    }
-                ]
-            }
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactsBucket
+      RoleArn: !Ref CodePipelineRole
+      Stages:
+      - Name: Source
+        Actions:
+        - Name: Source
+          ActionTypeId:
+            Category: Source
+            Owner: ThirdParty
+            Version: 1
+            Provider: GitHub
+          Configuration:
+            Owner: !Ref GitHubOwner
+            Repo: !Ref GitHubRepo
+            Branch: !FindInMap [Branch, !Ref 'Environment', BRANCH]
+            OAuthToken: !Ref GitHubToken
+          OutputArtifacts:
+            - Name: SourceOutput
+          RunOrder: 1
+      - Name: Build
+        Actions:
+          - Name: BuildPushImage
+            ActionTypeId:
+              Category: Build
+              Owner: AWS
+              Provider: CodeBuild
+              Version: 1
+            Configuration:
+              ProjectName: !Ref CodeBuildProject
+            InputArtifacts:
+              - Name: SourceOutput
+            OutputArtifacts:
+              - Name: BuildOutput
+      - Name: AppStack
+        Actions:
+          - Name: Infrastructure
+            InputArtifacts:
+              - Name: BuildOutput
+            ActionTypeId:
+              Category: Deploy
+              Owner: AWS
+              Version: 1
+              Provider: CloudFormation
+            Configuration:
+              TemplatePath: !Sub "GroupSource::cloudformation.yml"
+              ActionMode: CREATE_UPDATE
+              Capabilities: CAPABILITY_NAMED_IAM
+              RoleArn: !Ref CloudFormationRole
+              StackName:
+                Fn::Join:
+                  - ''
+                  - - 'video-goldfish-app-'
+                    - Ref: Environment
+              ParameterOverrides: !Sub |
+                {
+                    "CloudFormationLambdaArn" : "${CloudFormationLambdaSandbox.Arn}",
+                    "VPCStack": "${VPCStack}",
+                    "SharedStack": "${SharedStack}",
+                    "BuildStack": "${AWS::StackName}",
+                    "Environment": "${Environment}",
+                    "Version" : { "Fn::GetParam" : ["BuildOutput", "version.json", "version"]}
+                }
+            RunOrder: 1
 
 Outputs:
   Repository:

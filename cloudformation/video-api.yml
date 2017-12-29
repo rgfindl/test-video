@@ -19,10 +19,20 @@ Parameters:
     Type: String
     Default: prod
 
+  GitHubOwner:
+    Description: The name of the GitHub repository owner
+    Type: String
+    Default: WPMedia
+
   GitHubToken:
     Description: GitHubToken
     Type: String
     NoEcho: true
+
+  GitHubRepo:
+    Type: String
+    Description: GitHub repository name
+    Default: 'test-video-service2' # TODO 'Post.TV'
 
   CloudFormationRole:
     Type: String

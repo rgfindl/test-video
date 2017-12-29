@@ -401,6 +401,7 @@ Resources:
                       "Environment":"prod",
                       "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-prod",
+                      "GitHubOwner": "${GitHubOwner}",
                       "GitHubToken": "${GitHubToken}",
                       "CloudFormationRole": "${CloudFormationRole.Arn}",
                       "CodePipelineRole": "${CodePipelineRole.Arn}"
@@ -428,6 +429,7 @@ Resources:
                       "Environment": "prod",
                       "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-prod",
+                      "GitHubOwner": "${GitHubOwner}",
                       "GitHubToken": "${GitHubToken}",
                       "CloudFormationRole": "${CloudFormationRole.Arn}",
                       "CodePipelineRole": "${CodePipelineRole.Arn}"
@@ -479,6 +481,7 @@ Resources:
                       "Environment": "prod",
                       "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-prod",
+                      "GitHubOwner": "${GitHubOwner}",
                       "GitHubToken": "${GitHubToken}",
                       "CloudFormationRole": "${CloudFormationRole.Arn}",
                       "CodePipelineRole": "${CodePipelineRole.Arn}"
@@ -581,6 +584,7 @@ Resources:
                       "Environment":"sandbox",
                       "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-sandbox",
+                      "GitHubOwner": "${GitHubOwner}",
                       "GitHubToken": "${GitHubToken}",
                       "CloudFormationRole": "${CloudFormationRole.Arn}",
                       "CodePipelineRole": "${CodePipelineRole.Arn}"
@@ -608,6 +612,7 @@ Resources:
                       "Environment": "sandbox",
                       "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-sandbox",
+                      "GitHubOwner": "${GitHubOwner}",
                       "GitHubToken": "${GitHubToken}",
                       "CloudFormationRole": "${CloudFormationRole.Arn}",
                       "CodePipelineRole": "${CodePipelineRole.Arn}"
@@ -659,6 +664,7 @@ Resources:
                       "Environment": "sandbox",
                       "VPCStack": "${VPCStack}",
                       "SharedStack":"video-shared-sandbox",
+                      "GitHubOwner": "${GitHubOwner}",
                       "GitHubToken": "${GitHubToken}",
                       "CloudFormationRole": "${CloudFormationRole.Arn}",
                       "CodePipelineRole": "${CodePipelineRole.Arn}"
