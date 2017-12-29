@@ -329,7 +329,7 @@ Resources:
                     "VPCStack" : "${VPCStack}",
                     "SharedStack" : "${SharedStack}",
                     "BuildStack" : "${BuildStack}",
-                    "Environment" : "${BuildStack}"
+                    "Environment" : "${Environment}"
                   }
                 - {
                     VPCStack: { "Ref" : "VPCStack"},
