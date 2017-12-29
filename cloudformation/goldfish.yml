@@ -52,6 +52,17 @@ Mappings:
 Resources:
 
   ##############################
+  # Buckets
+  ##############################
+
+  #
+  # Bucket used by the pipelines to store artifacts.
+  #
+  PipelinesBucket:
+    Description: The artifact bucket required for inter-stage data exchange
+    Type: AWS::S3::Bucket
+
+  ##############################
   # ECR Repository
   ##############################
 
@@ -67,7 +78,6 @@ Resources:
   #############################
   # Roles
   #############################
-
 
   #
   # IAM Role needed by the pipelines
@@ -169,15 +179,6 @@ Resources:
   # CodePipeline
   #############################
 
-
-  #
-  # Artifact Bucket
-  #
-  ArtifactsBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      AccessControl: Private
-
   #
   # CodeBuild Permissions
   #
@@ -211,8 +212,8 @@ Resources:
             Action:
               - s3:*
             Resource:
-              - !Sub 'arn:aws:s3:::${ArtifactsBucket}'
-              - !Sub 'arn:aws:s3:::${ArtifactsBucket}/*'
+              - !Sub 'arn:aws:s3:::${PipelinesBucket}'
+              - !Sub 'arn:aws:s3:::${PipelinesBucket}/*'
           - Effect: Allow
             Action:
               - ecr:GetAuthorizationToken
@@ -275,7 +276,7 @@ Resources:
     Properties:
       ArtifactStore:
         Type: S3
-        Location: !Ref ArtifactsBucket
+        Location: !Ref PipelinesBucket
       RoleArn: !GetAtt CodePipelineRole.Arn
       Stages:
       - Name: Source
