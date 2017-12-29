@@ -58,7 +58,12 @@ Resources:
 
   TranscoderPreset06:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset01
+    DependsOn:
+      - TranscoderPreset01
+      - TranscoderPreset02
+      - TranscoderPreset03
+      - TranscoderPreset04
+      - TranscoderPreset05
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -68,7 +73,12 @@ Resources:
 
   TranscoderPreset07:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset01
+    DependsOn:
+      - TranscoderPreset01
+      - TranscoderPreset02
+      - TranscoderPreset03
+      - TranscoderPreset04
+      - TranscoderPreset05
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -78,7 +88,12 @@ Resources:
 
   TranscoderPreset08:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset01
+    DependsOn:
+      - TranscoderPreset01
+      - TranscoderPreset02
+      - TranscoderPreset03
+      - TranscoderPreset04
+      - TranscoderPreset05
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -88,7 +103,12 @@ Resources:
 
   TranscoderPreset09:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset01
+    DependsOn:
+      - TranscoderPreset01
+      - TranscoderPreset02
+      - TranscoderPreset03
+      - TranscoderPreset04
+      - TranscoderPreset05
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -98,7 +118,12 @@ Resources:
 
   TranscoderPreset10:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset01
+    DependsOn:
+      - TranscoderPreset01
+      - TranscoderPreset02
+      - TranscoderPreset03
+      - TranscoderPreset04
+      - TranscoderPreset05
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -108,7 +133,12 @@ Resources:
 
   TranscoderPreset11:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset06
+    DependsOn:
+      - TranscoderPreset06
+      - TranscoderPreset07
+      - TranscoderPreset08
+      - TranscoderPreset09
+      - TranscoderPreset10
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -118,7 +148,12 @@ Resources:
 
   TranscoderPreset12:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset06
+    DependsOn:
+      - TranscoderPreset06
+      - TranscoderPreset07
+      - TranscoderPreset08
+      - TranscoderPreset09
+      - TranscoderPreset10
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -128,7 +163,12 @@ Resources:
 
   TranscoderPreset13:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset06
+    DependsOn:
+      - TranscoderPreset06
+      - TranscoderPreset07
+      - TranscoderPreset08
+      - TranscoderPreset09
+      - TranscoderPreset10
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -138,7 +178,12 @@ Resources:
 
   TranscoderPreset14:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset06
+    DependsOn:
+      - TranscoderPreset06
+      - TranscoderPreset07
+      - TranscoderPreset08
+      - TranscoderPreset09
+      - TranscoderPreset10
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -148,7 +193,12 @@ Resources:
 
   TranscoderPreset15:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset06
+    DependsOn:
+      - TranscoderPreset06
+      - TranscoderPreset07
+      - TranscoderPreset08
+      - TranscoderPreset09
+      - TranscoderPreset10
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -158,7 +208,12 @@ Resources:
 
   TranscoderPreset16:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset11
+    DependsOn:
+      - TranscoderPreset11
+      - TranscoderPreset12
+      - TranscoderPreset13
+      - TranscoderPreset14
+      - TranscoderPreset15
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -168,7 +223,12 @@ Resources:
 
   TranscoderPreset17:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset11
+    DependsOn:
+      - TranscoderPreset11
+      - TranscoderPreset12
+      - TranscoderPreset13
+      - TranscoderPreset14
+      - TranscoderPreset15
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -178,7 +238,12 @@ Resources:
 
   TranscoderPreset18:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset11
+    DependsOn:
+      - TranscoderPreset11
+      - TranscoderPreset12
+      - TranscoderPreset13
+      - TranscoderPreset14
+      - TranscoderPreset15
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -188,7 +253,12 @@ Resources:
 
   TranscoderPreset19:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset11
+    DependsOn:
+      - TranscoderPreset11
+      - TranscoderPreset12
+      - TranscoderPreset13
+      - TranscoderPreset14
+      - TranscoderPreset15
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -198,7 +268,12 @@ Resources:
 
   TranscoderPreset20:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset11
+    DependsOn:
+      - TranscoderPreset11
+      - TranscoderPreset12
+      - TranscoderPreset13
+      - TranscoderPreset14
+      - TranscoderPreset15
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -208,7 +283,12 @@ Resources:
 
   TranscoderPreset21:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset16
+    DependsOn:
+      - TranscoderPreset16
+      - TranscoderPreset17
+      - TranscoderPreset18
+      - TranscoderPreset19
+      - TranscoderPreset20
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -218,7 +298,12 @@ Resources:
 
   TranscoderPreset22:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset16
+    DependsOn:
+      - TranscoderPreset16
+      - TranscoderPreset17
+      - TranscoderPreset18
+      - TranscoderPreset19
+      - TranscoderPreset20
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -228,7 +313,12 @@ Resources:
 
   TranscoderPreset23:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset16
+    DependsOn:
+      - TranscoderPreset16
+      - TranscoderPreset17
+      - TranscoderPreset18
+      - TranscoderPreset19
+      - TranscoderPreset20
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -238,7 +328,12 @@ Resources:
 
   TranscoderPreset24:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset16
+    DependsOn:
+      - TranscoderPreset16
+      - TranscoderPreset17
+      - TranscoderPreset18
+      - TranscoderPreset19
+      - TranscoderPreset20
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -248,7 +343,12 @@ Resources:
 
   TranscoderPreset25:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset16
+    DependsOn:
+      - TranscoderPreset16
+      - TranscoderPreset17
+      - TranscoderPreset18
+      - TranscoderPreset19
+      - TranscoderPreset20
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -258,7 +358,12 @@ Resources:
 
   TranscoderPreset26:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset21
+    DependsOn:
+      - TranscoderPreset21
+      - TranscoderPreset22
+      - TranscoderPreset23
+      - TranscoderPreset24
+      - TranscoderPreset25
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
@@ -268,7 +373,12 @@ Resources:
 
   TranscoderPreset27:
     Type: Custom::TranscoderPreset
-    DependsOn: TranscoderPreset21
+    DependsOn:
+      - TranscoderPreset21
+      - TranscoderPreset22
+      - TranscoderPreset23
+      - TranscoderPreset24
+      - TranscoderPreset25
     Version: "1.0"
     Properties:
       ServiceToken: !Ref CloudFormationLambdaArn
