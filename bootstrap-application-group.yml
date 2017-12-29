@@ -16,6 +16,7 @@ Parameters:
     Type: String
     Description: GitHub repository OAuth token
     Default: ''
+    NoEcho: true
   GitHubRepo:
     Type: String
     Description: GitHub repository name
@@ -651,14 +652,15 @@ Outputs:
     Value: !Ref PipelinesBucket
     Description: S3 bucket for pipeline artifacts
     Export:
-      Name: PipelinesBucket
+      Name: !Sub '${AWS::StackName}-PipelinesBucket'
   CloudFormationRoleArn:
     Value: !GetAtt CloudFormationRole.Arn
     Description: CloudFormationRole for pipelines
     Export:
-      Name: PipelinesCloudFormationRoleArn
+      Name: !Sub '${AWS::StackName}-PipelinesCloudFormationRoleArn'
   CodePipelineRoleArn:
     Value: !GetAtt CodePipelineRole.Arn
     Description: CodePipelineRole for pipelines
     Export:
-      Name: PipelinesCodePipelineRoleArn
+      Name: !Sub '${AWS::StackName}-PipelinesCodePipelineRoleArn'
+

@@ -21,9 +21,6 @@ functions.createPreset = function(params, done) {
 };
 
 functions.deletePreset = function(params, done) {
-    if (_.isNil(params.Description)) {
-        params.Description = '';
-    }
     elastictranscoder.deletePreset(params, done);
 };
 
