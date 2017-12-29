@@ -229,7 +229,7 @@ Resources:
                     - Ref: Environment
               ParameterOverrides: !Sub |
                 {
-                    "CloudFormationLambdaArn" : "${CloudFormationLambdaSandbox.Arn}",
+                    "CloudFormationLambdaArn" : "${CloudFormationLambdaArn}",
                     "VPCStack": "${VPCStack}",
                     "SharedStack": "${SharedStack}",
                     "BuildStack": "${AWS::StackName}",
