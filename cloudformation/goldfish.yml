@@ -258,7 +258,7 @@ Resources:
       Source:
         Type: CODEPIPELINE
         BuildSpec: buildspec.yml
-      TimeoutInMinutes: 5 # must be between 5 minutes and 8 hours
+      TimeoutInMinutes: 10 # must be between 5 minutes and 8 hours
 
   #
   # CodePipeline
@@ -312,7 +312,7 @@ Resources:
               Version: 1
               Provider: CloudFormation
             Configuration:
-              TemplatePath: !Sub "GroupSource::cloudformation.yml"
+              TemplatePath: !Sub "SourceOutput::cloudformation.yml"
               ActionMode: CREATE_UPDATE
               Capabilities: CAPABILITY_NAMED_IAM
               RoleArn: !GetAtt CloudFormationRole.Arn
