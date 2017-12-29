@@ -23,12 +23,8 @@ Resources:
             "SampleRate": "44100",
             "BitRate": "160",
             "Channels": "2",
-            "AudioPackingMode": null,
             "CodecOptions": {
-              "Profile": "AAC-LC",
-              "BitDepth": null,
-              "BitOrder": null,
-              "Signed": null
+              "Profile": "AAC-LC"
             }
           },
           "Video": {
@@ -44,9 +40,6 @@ Resources:
             "FixedGOP": "false",
             "BitRate": "2000",
             "FrameRate": "29.97",
-            "MaxFrameRate": null,
-            "Resolution": null,
-            "AspectRatio": null,
             "MaxWidth": "1280",
             "MaxHeight": "720",
             "DisplayAspectRatio": "auto",
@@ -106,8 +99,6 @@ Resources:
           "Thumbnails": {
             "Format": "png",
             "Interval": "10",
-            "Resolution": null,
-            "AspectRatio": null,
             "MaxWidth": "192",
             "MaxHeight": "108",
             "SizingPolicy": "Fit",
