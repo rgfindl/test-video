@@ -34,14 +34,6 @@ Parameters:
     Description: GitHub repository name
     Default: 'test-video-service1' # TODO 'Post.TV'
 
-  Version:
-    Type: String
-    Description: ECR version to deploy
-    Default: 'latest'
-
-Conditions:
-  IsProd: !Equals [!Ref Environment, 'master']
-
 Mappings:
   Branch:
     prod:
@@ -329,24 +321,14 @@ Resources:
                   - ''
                   - - 'video-goldfish-app-'
                     - Ref: Environment
-              ParameterOverrides:
-                Fn::Join:
-                  - ''
-                  - - '{'
-                    - Sub: '"CloudFormationLambdaArn" : "${CloudFormationLambdaArn}"'
-                    - ','
-                    - Sub: '"VPCStack" : "${VPCStack}"'
-                    - ','
-                    - Sub: '"SharedStack" : "${SharedStack}"'
-                    - ','
-                    - Sub: '"BuildStack" : "${AWS::StackName}"'
-                    - ','
-                    - Sub: '"Environment" : "${Environment}"'
-                    - ','
-                    - Sub: '"Version" : "'
-                    - !If [IsProd, { "Ref" : "Version"}, { "Fn::GetParam" : ["BuildOutput", "version.json", "version"]}]
-                    - '"'
-                    - '}'
+              ParameterOverrides: |
+                {
+                  "BuildVersion" : { "Fn::GetParam" : ["BuildOutput", "version.json", "version"]},
+                  "VPCStack" : { "Ref" : "VPCStack"},
+                  "SharedStack" : { "Ref" : "SharedStack"},
+                  "BuildStack" : { "Ref" : "AWS::StackName"},
+                  "Environment" : { "Ref" : "Environment"}
+                }
             RunOrder: 1
 
 Outputs:
