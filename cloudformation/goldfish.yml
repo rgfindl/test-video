@@ -322,14 +322,21 @@ Resources:
                   - ''
                   - - 'video-goldfish-app-'
                     - Ref: Environment
-              ParameterOverrides: |
-                {
-                  "BuildVersion" : { "Fn::GetParam" : ["BuildOutput", "version.json", "version"]},
-                  "VPCStack" : { "Ref" : "VPCStack"},
-                  "SharedStack" : { "Ref" : "SharedStack"},
-                  "BuildStack" : { "Ref" : "AWS::StackName"},
-                  "Environment" : { "Ref" : "Environment"}
-                }
+              ParameterOverrides: !Sub
+                - |
+                  {
+                    "BuildVersion" : { "Fn::GetParam" : ["BuildOutput", "version.json", "version"]},
+                    "VPCStack" : "${VPCStack}",
+                    "SharedStack" : "${SharedStack}",
+                    "BuildStack" : "${BuildStack}",
+                    "Environment" : "${BuildStack}"
+                  }
+                - {
+                    VPCStack: { "Ref" : "VPCStack"},
+                    SharedStack: { "Ref" : "SharedStack"},
+                    BuildStack: { "Ref" : "AWS::StackName"},
+                    Environment: { "Ref" : "Environment"}
+                  }
             RunOrder: 1
 
 Outputs:
